@@ -49,7 +49,7 @@ public class TaskController {
                 .body(this.taskService.findAllPaginated(id, title, description, priority, state, pageNumber, pageSize));
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Mono<Void>> delete(@PathVariable("id") String id) {
         this.taskService.delete(id);

@@ -1,12 +1,18 @@
 package br.com.joaogabriel.tasks.controller.payload;
 
-import br.com.joaogabriel.tasks.model.enumerations.TaskState;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 
 public record TaskRequest(
-       String title,
-       String description,
-       int priority
+        @NotBlank
+        String title,
+
+        @NotBlank
+        String description,
+
+        @NotNull
+        int priority
 ) implements Serializable {
 }
