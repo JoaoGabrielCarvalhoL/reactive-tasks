@@ -22,4 +22,6 @@ public interface TaskService {
     Mono<Void> delete(String id);
 
     Mono<TaskResponse> start(String id, String zipCode);
+
+    Mono<Task> done(Task task);
 }

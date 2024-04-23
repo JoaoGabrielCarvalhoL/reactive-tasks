@@ -4,6 +4,7 @@ import br.com.joaogabriel.tasks.client.response.Address;
 import br.com.joaogabriel.tasks.controller.payload.TaskRequest;
 import br.com.joaogabriel.tasks.controller.payload.TaskResponse;
 import br.com.joaogabriel.tasks.mapper.TaskMapper;
+import br.com.joaogabriel.tasks.messaging.TaskNotificationProducer;
 import br.com.joaogabriel.tasks.model.Task;
 import br.com.joaogabriel.tasks.model.enumerations.TaskState;
 import br.com.joaogabriel.tasks.repository.TaskReactiveCustomRepository;
@@ -27,15 +28,18 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final TaskReactiveCustomRepository taskReactiveCustomRepository;
     private final AddressService addressService;
+    private final TaskNotificationProducer taskNotificationProducer;
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
 
     public TaskServiceImpl(TaskMapper taskMapper, TaskRepository taskRepository,
                            TaskReactiveCustomRepository taskReactiveCustomRepository,
-                           AddressService addressService) {
+                           AddressService addressService,
+                           TaskNotificationProducer taskNotificationProducer) {
         this.taskMapper = taskMapper;
         this.taskRepository = taskRepository;
         this.taskReactiveCustomRepository = taskReactiveCustomRepository;
         this.addressService = addressService;
+        this.taskNotificationProducer = taskNotificationProducer;
     }
 
     @Override
@@ -43,9 +47,9 @@ public class TaskServiceImpl implements TaskService {
         return Mono.just(task)
                 .map(taskMapper::toTask)
                 .map(Task::insert)
-                .doOnNext(saved -> logger.log(Level.INFO, "Saving Task {1} into database.", saved.getId()))
+                .doOnNext(saved -> logger.log(Level.INFO, "Saving Task {0} into database.", saved.getId()))
                 .flatMap(this::save)
-                .doOnError(error -> logger.log(Level.INFO, "Something wrong... Cannot save task {1}", error))
+                .doOnError(error -> logger.log(Level.INFO, "Something wrong... Cannot save task {0}", error))
                 .map(taskMapper::toTaskResponse);
     }
 
@@ -75,9 +79,18 @@ public class TaskServiceImpl implements TaskService {
                 .flatMap(it -> updateAddress(it.getT1(), it.getT2()))
                 .map(Task::start)
                 .flatMap(taskRepository::save)
+                .flatMap(taskNotificationProducer::sendNotification)
                 .map(taskMapper::toTaskResponse)
                 .switchIfEmpty(Mono.error(ResourceNotFoundException::new))
-                .doOnError(error -> logger.log(Level.INFO, "Error on start task. Id: {1}", id));
+                .doOnError(error -> logger.log(Level.INFO, "Error on start task. Id: {0}", id));
+    }
+
+    @Override
+    public Mono<Task> done(Task task) {
+        return Mono.just(task)
+                .doOnNext(it -> logger.log(Level.INFO, "Finishing Task. Id: ", task.getId()))
+                .map(Task::done)
+                .flatMap(taskRepository::save);
     }
 
     private Mono<Task> save(Task task) {

@@ -22,7 +22,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public Mono<Address> getAddress(String zipCode) {
         return Mono.just(zipCode)
-                .doOnNext(it -> logger.log(Level.INFO, "Getting Address by cep: {1}", zipCode))
+                .doOnNext(it -> logger.log(Level.INFO, "Getting Address by cep: {0}", zipCode))
                 .flatMap(viaCepClient::getAddress)
                 .doOnError(it -> Mono.error(CepNotFoundException::new));
     }

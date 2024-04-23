@@ -17,11 +17,28 @@ public class Task {
 
     public Task() {}
 
+    public Task(String title, String description, int priority, TaskState state, Address address) {
+        this.title = title;
+        this.description = description;
+        this.priority = priority;
+        this.state = state;
+        this.address = address;
+    }
+
     public Task(String title, String description, int priority, TaskState state) {
         this.title = title;
         this.description = description;
         this.priority = priority;
         this.state = state;
+    }
+
+    public Task(String id, String title, String description, int priority, TaskState state, Address address) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.priority = priority;
+        this.state = state;
+        this.address = address;
     }
 
     public String getId() {
@@ -60,10 +77,6 @@ public class Task {
         this.state = state;
     }
 
-    public Task newTask() {
-        return this;
-    }
-
     public Task insert() {
         return builderFrom(this)
                 .withState(TaskState.INSERT)
@@ -93,6 +106,12 @@ public class Task {
 
     public Task start() {
         return builderFrom(this).withState(TaskState.DOING).build();
+    }
+
+    public Task done() {
+        return builderFrom(this)
+                .withState(TaskState.DONE)
+                .build();
     }
 
     public static class Builder {
@@ -145,7 +164,7 @@ public class Task {
         }
 
         public Task build() {
-            return new Task(title, description, priority, state);
+            return new Task(id,title, description, priority, state, address);
         }
 
 
