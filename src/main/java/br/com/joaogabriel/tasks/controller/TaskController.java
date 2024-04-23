@@ -37,7 +37,7 @@ public class TaskController {
 
     @GetMapping("/paginated")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Flux<Page<TaskResponse>>>
+    public ResponseEntity<Mono<Page<TaskResponse>>>
     findAllTasksWithPagination(@RequestParam(required = false, name = "id") String id,
                                @RequestParam(required = false, name = "title") String title,
                                @RequestParam(required = false, name = "description") String description,

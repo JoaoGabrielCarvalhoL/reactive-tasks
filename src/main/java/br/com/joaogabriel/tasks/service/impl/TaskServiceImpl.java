@@ -6,7 +6,7 @@ import br.com.joaogabriel.tasks.controller.payload.TaskResponse;
 import br.com.joaogabriel.tasks.mapper.TaskMapper;
 import br.com.joaogabriel.tasks.model.Task;
 import br.com.joaogabriel.tasks.model.enumerations.TaskState;
-import br.com.joaogabriel.tasks.repository.TaskCustomRepository;
+import br.com.joaogabriel.tasks.repository.TaskReactiveCustomRepository;
 import br.com.joaogabriel.tasks.repository.TaskRepository;
 import br.com.joaogabriel.tasks.service.TaskService;
 import org.springframework.stereotype.Service;
@@ -23,13 +23,13 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskMapper taskMapper;
     private final TaskRepository taskRepository;
-    private final TaskCustomRepository taskCustomRepository;
+    private final TaskReactiveCustomRepository taskReactiveCustomRepository;
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
 
-    public TaskServiceImpl(TaskMapper taskMapper, TaskRepository taskRepository, TaskCustomRepository taskCustomRepository) {
+    public TaskServiceImpl(TaskMapper taskMapper, TaskRepository taskRepository, TaskReactiveCustomRepository taskReactiveCustomRepository) {
         this.taskMapper = taskMapper;
         this.taskRepository = taskRepository;
-        this.taskCustomRepository = taskCustomRepository;
+        this.taskReactiveCustomRepository = taskReactiveCustomRepository;
     }
 
     @Override
@@ -47,14 +47,14 @@ public class TaskServiceImpl implements TaskService {
     public Flux<List<TaskResponse>> findAll() {
         return Flux.just(this.taskRepository
                 .findAll()
-                .stream()
+                .toStream()
                 .map(taskMapper::toTaskResponse).toList());
     }
 
     @Override
-    public Flux<Page<TaskResponse>> findAllPaginated(String id, String title, String description, int priority,
+    public Mono<Page<TaskResponse>> findAllPaginated(String id, String title, String description, int priority,
                                                TaskState state, Integer pageNumber, Integer pageSize) {
-        return Flux.just(taskCustomRepository.findAllPaginated(id, title, description, priority, state, pageNumber, pageSize));
+        return taskReactiveCustomRepository.findAllPaginated(id, title, description, priority, state, pageNumber, pageSize);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class TaskServiceImpl implements TaskService {
 
     private Mono<Task> save(Task task) {
         return Mono.just(task)
-                .map(taskRepository::save);
+                .flatMap(taskRepository::save);
     }
 
     private Mono<Task> updateAddress(Task task, Address address) {

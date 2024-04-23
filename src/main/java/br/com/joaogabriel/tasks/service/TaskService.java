@@ -16,7 +16,7 @@ public interface TaskService {
     Flux<List<TaskResponse>> findAll();
 
 
-    Flux<Page<TaskResponse>> findAllPaginated(String id, String title, String description, int priority, TaskState state, Integer pageNumber, Integer pageSize);
+    Mono<Page<TaskResponse>> findAllPaginated(String id, String title, String description, int priority, TaskState state, Integer pageNumber, Integer pageSize);
 
     Mono<Void> delete(String id);
 }

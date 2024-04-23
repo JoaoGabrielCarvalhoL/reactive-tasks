@@ -6,27 +6,27 @@ import br.com.joaogabriel.tasks.model.Task;
 import br.com.joaogabriel.tasks.model.enumerations.TaskState;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.ReactiveMongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 @Repository
-public class TaskCustomRepository {
+public class TaskReactiveCustomRepository {
 
-    private final MongoOperations mongoOperations;
+    private final ReactiveMongoOperations reactiveMongoOperations;
     private final TaskMapper taskMapper;
 
-    //TODO: Need to be refactor to reactive.
-
-    public TaskCustomRepository(MongoOperations mongoOperations, TaskMapper taskMapper) {
-        this.mongoOperations = mongoOperations;
+    public TaskReactiveCustomRepository(ReactiveMongoOperations reactiveMongoOperations, TaskMapper taskMapper) {
+        this.reactiveMongoOperations = reactiveMongoOperations;
         this.taskMapper = taskMapper;
     }
 
-    public Page<TaskResponse> findAllPaginated(String id, String title,
+    public Mono<Page<TaskResponse>> findAllPaginated(String id, String title,
                                                      String description, int priority,
                                                      TaskState state, Integer pageNumber, Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.ASC, "title");
@@ -52,10 +52,10 @@ public class TaskCustomRepository {
             query.addCriteria(Criteria.where("state").is(task.getState()));
         }
 
-        Page<Task> page = PageableExecutionUtils.getPage(mongoOperations.find(query, Task.class), pageable,
-                () -> mongoOperations.count(query, Task.class));
-        List<TaskResponse> list = page.stream().map(taskMapper::toTaskResponse).toList();
-        return new PageImpl<TaskResponse>(list, pageable, list.size());
+        return reactiveMongoOperations.find(query, Task.class).collectList()
+                .zipWith(reactiveMongoOperations.count(Query.query(Criteria.byExample(example)), Task.class))
+                .map(tuple -> PageableExecutionUtils.getPage(tuple.getT1().stream()
+                        .map(taskMapper::toTaskResponse).toList(), pageable, tuple::getT2));
 
     }
 
