@@ -1,5 +1,6 @@
 package br.com.joaogabriel.tasks.model;
 
+import br.com.joaogabriel.tasks.client.response.Address;
 import br.com.joaogabriel.tasks.model.enumerations.TaskState;
 import org.springframework.data.annotation.Id;
 
@@ -12,6 +13,7 @@ public class Task {
     private String description;
     private int priority;
     private TaskState state;
+    private Address address;
 
     public Task() {}
 
@@ -76,12 +78,26 @@ public class Task {
         return new Builder(task);
     }
 
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public Task updateAddress(Address address) {
+        this.address = address;
+        return this;
+    }
+
     public static class Builder {
         private String id;
         private String title;
         private String description;
         private int priority;
         private TaskState state;
+        private Address address;
 
         public Builder() {}
 
@@ -91,6 +107,7 @@ public class Task {
             this.description = task.getDescription();
             this.priority = task.getPriority();
             this.state = task.getState();
+            this.address = task.getAddress();
         }
 
         public Builder withId(String id) {
@@ -115,6 +132,11 @@ public class Task {
 
         public Builder withState(TaskState state) {
             this.state = state;
+            return this;
+        }
+
+        public Builder withAddress(Address address) {
+            this.address = address;
             return this;
         }
 

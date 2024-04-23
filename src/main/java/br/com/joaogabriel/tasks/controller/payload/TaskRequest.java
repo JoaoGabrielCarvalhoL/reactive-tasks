@@ -1,5 +1,6 @@
 package br.com.joaogabriel.tasks.controller.payload;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -12,7 +13,7 @@ public record TaskRequest(
         @NotBlank
         String description,
 
-        @NotNull
+        @Min(1)
         int priority
 ) implements Serializable {
 }

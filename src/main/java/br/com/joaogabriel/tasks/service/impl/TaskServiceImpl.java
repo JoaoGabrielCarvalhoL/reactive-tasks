@@ -1,5 +1,6 @@
 package br.com.joaogabriel.tasks.service.impl;
 
+import br.com.joaogabriel.tasks.client.response.Address;
 import br.com.joaogabriel.tasks.controller.payload.TaskRequest;
 import br.com.joaogabriel.tasks.controller.payload.TaskResponse;
 import br.com.joaogabriel.tasks.mapper.TaskMapper;
@@ -42,11 +43,6 @@ public class TaskServiceImpl implements TaskService {
                 .map(taskMapper::toTaskResponse);
     }
 
-    private Mono<Task> save(Task task) {
-        return Mono.just(task)
-                .map(taskRepository::save);
-    }
-
     @Override
     public Flux<List<TaskResponse>> findAll() {
         return Flux.just(this.taskRepository
@@ -64,7 +60,20 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Mono<Void> delete(String id) {
         return Mono.fromRunnable(() -> this.taskRepository.deleteById(id));
+    }
 
+    public Mono<Task> start(String id, String zipCode) {
+        return Mono.empty();
+    }
+
+    private Mono<Task> save(Task task) {
+        return Mono.just(task)
+                .map(taskRepository::save);
+    }
+
+    private Mono<Task> updateAddress(Task task, Address address) {
+        return Mono.just(task)
+                .map(it -> task.updateAddress(address));
     }
 
 }
