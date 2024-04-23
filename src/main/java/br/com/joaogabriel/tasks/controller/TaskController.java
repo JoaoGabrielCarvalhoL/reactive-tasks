@@ -56,5 +56,11 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/start")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<Mono<TaskResponse>> start(@RequestParam("id") String id, @RequestParam("zipCode") String zipCode) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.taskService.start(id, zipCode));
+    }
+
 
 }

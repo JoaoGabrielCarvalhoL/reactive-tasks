@@ -11,13 +11,12 @@ public class ViaCepClient {
 
     private final WebClient webClient;
 
-    private final String VIA_CEP_URI = "/{cep}/json";
-
     public ViaCepClient(WebClient webClient) {
         this.webClient = webClient;
     }
 
     public Mono<Address> getAddress(String zipCode) {
+        String VIA_CEP_URI = "/{cep}/json";
         return this.webClient.get()
                 .uri(VIA_CEP_URI, zipCode)
                 .retrieve()

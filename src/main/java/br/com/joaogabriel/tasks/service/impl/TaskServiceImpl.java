@@ -8,7 +8,9 @@ import br.com.joaogabriel.tasks.model.Task;
 import br.com.joaogabriel.tasks.model.enumerations.TaskState;
 import br.com.joaogabriel.tasks.repository.TaskReactiveCustomRepository;
 import br.com.joaogabriel.tasks.repository.TaskRepository;
+import br.com.joaogabriel.tasks.service.AddressService;
 import br.com.joaogabriel.tasks.service.TaskService;
+import br.com.joaogabriel.tasks.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import reactor.core.publisher.Flux;
@@ -24,12 +26,16 @@ public class TaskServiceImpl implements TaskService {
     private final TaskMapper taskMapper;
     private final TaskRepository taskRepository;
     private final TaskReactiveCustomRepository taskReactiveCustomRepository;
+    private final AddressService addressService;
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
 
-    public TaskServiceImpl(TaskMapper taskMapper, TaskRepository taskRepository, TaskReactiveCustomRepository taskReactiveCustomRepository) {
+    public TaskServiceImpl(TaskMapper taskMapper, TaskRepository taskRepository,
+                           TaskReactiveCustomRepository taskReactiveCustomRepository,
+                           AddressService addressService) {
         this.taskMapper = taskMapper;
         this.taskRepository = taskRepository;
         this.taskReactiveCustomRepository = taskReactiveCustomRepository;
+        this.addressService = addressService;
     }
 
     @Override
@@ -62,8 +68,16 @@ public class TaskServiceImpl implements TaskService {
         return Mono.fromRunnable(() -> this.taskRepository.deleteById(id));
     }
 
-    public Mono<Task> start(String id, String zipCode) {
-        return Mono.empty();
+    @Override
+    public Mono<TaskResponse> start(String id, String zipCode) {
+        return this.taskRepository.findById(id)
+                .zipWhen(it -> addressService.getAddress(zipCode))
+                .flatMap(it -> updateAddress(it.getT1(), it.getT2()))
+                .map(Task::start)
+                .flatMap(taskRepository::save)
+                .map(taskMapper::toTaskResponse)
+                .switchIfEmpty(Mono.error(ResourceNotFoundException::new))
+                .doOnError(error -> logger.log(Level.INFO, "Error on start task. Id: {1}", id));
     }
 
     private Mono<Task> save(Task task) {

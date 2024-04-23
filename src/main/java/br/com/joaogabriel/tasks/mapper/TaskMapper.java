@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 public class TaskMapper {
 
     public TaskResponse toTaskResponse(Task task) {
-        return new TaskResponse(task.getId(), task.getTitle(), task.getDescription(), task.getPriority(), task.getState());
+        return new TaskResponse(task.getId(), task.getTitle(), task.getDescription(), task.getPriority(),
+                task.getState(), task.getAddress());
     }
 
     public TaskRequest toTaskRequest(Task task) {

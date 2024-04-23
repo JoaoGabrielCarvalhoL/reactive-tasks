@@ -91,6 +91,10 @@ public class Task {
         return this;
     }
 
+    public Task start() {
+        return builderFrom(this).withState(TaskState.DOING).build();
+    }
+
     public static class Builder {
         private String id;
         private String title;

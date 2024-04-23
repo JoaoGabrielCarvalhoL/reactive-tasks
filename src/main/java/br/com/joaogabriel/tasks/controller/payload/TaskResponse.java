@@ -1,5 +1,6 @@
 package br.com.joaogabriel.tasks.controller.payload;
 
+import br.com.joaogabriel.tasks.client.response.Address;
 import br.com.joaogabriel.tasks.model.enumerations.TaskState;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -10,6 +11,7 @@ public record TaskResponse(String id,
                            String title,
                            String description,
                            int priority,
-                           TaskState state
+                           TaskState state,
+                           Address address
 ) implements Serializable {
 }
